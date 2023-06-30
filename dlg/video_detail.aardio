@@ -1,0 +1,20 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="视频详情和评论";right=487;bottom=615;bgcolor=16777215;border="thin";max=false;mode="popup";topmost=1)
+winform.add(
+VideoDetail={cls="richedit";text="  暂无视频简介";left=8;top=48;right=480;bottom=152;bgcolor=16777215;color=3618615;link=1;multiline=1;readonly=1;vscroll=1;wrap=1;z=2};
+VideoReview={cls="richedit";text="  暂无视频评论";left=8;top=208;right=480;bottom=608;bgcolor=16777215;color=3618615;link=1;multiline=1;readonly=1;vscroll=1;wrap=1;z=4};
+static={cls="static";text="  视频详情";left=8;top=8;right=96;bottom=40;bgcolor=0;center=1;color=16777215;font=LOGFONT(h=-16);z=1};
+static2={cls="static";text="  视频评论";left=8;top=168;right=96;bottom=200;bgcolor=0;center=1;color=16777215;font=LOGFONT(h=-16);z=3}
+)
+/*}}*/
+
+/* ctrl+w 关闭窗口 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'W'#; oncommand = function(){winform.close();} } 
+},winform);
+
+winform.show();
+win.loopMessage();
+return winform;
