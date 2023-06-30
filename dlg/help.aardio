@@ -1,0 +1,29 @@
+import win.ui;
+import fonts.fontAwesome;
+/*DSG{{*/
+var winform = win.form(text="帮助";right=1040;bottom=607;bgcolor=16777215)
+winform.add(
+lbAbout={cls="plus";text="关于软件";left=32;top=176;right=374;bottom=207;align="left";db=1;dl=1;font=LOGFONT(h=-16);iconColor=2960685;iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome')};iconText='\uF059';textPadding={left=30};z=1};
+lbWebSite={cls="plus";text="官网:";left=100;top=208;right=148;bottom=239;align="left";db=1;dl=1;font=LOGFONT(h=-16);iconColor=3947580;z=2};
+lnkVersion={cls="plus";text="点击检查新版本";left=96;top=296;right=457;bottom=327;align="left";color=8388608;db=1;dl=1;font=LOGFONT(h=-16);iconColor=2960685;iconStyle={align="left";font=LOGFONT(h=-16;name='FontAwesome')};iconText='\uF021';notify=1;paddingLeft=20;z=4};
+lnkWebSite={cls="plus";text="ez118.github.io";left=141;top=211;right=281;bottom=235;align="left";color=8388608;db=1;dl=1;font=LOGFONT(h=-16);iconColor=2960685;notify=1;textPadding={left=5};valign="top";z=3};
+picturebox={cls="picturebox";left=32;top=32;right=160;bottom=160;image=$"\res\icon_medium.jpg";z=6};
+plus={cls="plus";text="自动更新 :";left=32;top=264;right=374;bottom=295;align="left";db=1;dl=1;font=LOGFONT(h=-16);iconColor=2960685;iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome')};iconText='\uF05A';textPadding={left=30};z=5};
+plus2={cls="plus";text="声明:  该程序由EZ118编写，属于哔哩哔哩的第三方客户端";left=100;top=232;right=568;bottom=263;align="left";db=1;dl=1;font=LOGFONT(h=-16);iconColor=3947580;z=8};
+static={cls="static";text="Bili32";left=184;top=48;right=368;bottom=140;center=1;font=LOGFONT(h=-48;weight=700);notify=1;transparent=1;z=7}
+)
+/*}}*/
+
+import style;
+winform.lnkWebSite.skin(style.link)
+winform.lnkVersion.skin(style.link)
+
+import process;
+winform.lnkWebSite.oncommand = function(id,event){
+	process.openUrl("https://ez118.github.io/")
+}
+
+
+winform.show();
+win.loopMessage();
+return winform;

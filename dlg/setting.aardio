@@ -1,0 +1,30 @@
+import fonts.fontAwesome;
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="设置";right=984;bottom=589;bgcolor=16777215)
+winform.add(
+LoginBtn={cls="plus";text="登录";left=72;top=24;right=172;bottom=56;bgcolor=-11513777;color=14737632;font=LOGFONT(h=-16);notify=1;z=1};
+static2={cls="static";text="账号";left=24;top=24;right=72;bottom=56;center=1;font=LOGFONT(h=-16);transparent=1;z=2}
+)
+/*}}*/
+
+winform.LoginBtn.skin({
+	background={
+		active=0xFF292B24;
+		default=0xFF4F5050;
+		hover=0xFF757475
+	};
+	color={
+		active=0xFFADADAD;
+		default=0xFFE0E0E0;
+		hover=0xFFFFFFFF
+	}
+})
+
+winform.LoginBtn.oncommand = function(id,event){
+	LoginForm = win.loadForm("\dlg\login.aardio");
+}
+
+winform.show();
+win.loopMessage();
+return winform;
