@@ -1,0 +1,114 @@
+import win.ui;
+import win.ui.menu;
+import web.json;
+import web.view;
+import inet.http;
+import inet.url;
+import inet.http;
+import string.list;
+import win.clip;
+/*DSG{{*/
+var winform = win.form(text="Video Player";right=759;bottom=469;bgcolor=1973790)
+winform.add(
+BvidStore={cls="edit";left=704;top=440;right=752;bottom=464;edge=1;hide=1;z=1};
+MyMsg={cls="static";text="分享链接已保存到剪贴板！";left=248;top=208;right=472;bottom=240;align="center";bgcolor=15793151;center=1;font=LOGFONT(h=-16);hide=1;z=2}
+)
+/*}}*/
+
+var wb = web.view(winform);
+var StartCnt = 0;
+
+subscribe("bvid", function(bvid){
+	if (StartCnt == 0) { StartCnt = 1; } else { return; }
+	
+	winform.BvidStore.text = bvid;
+    /*
+    //请求获得视频流信息
+    var MediaInfo = web.json.parse(http.get("https://api.bilibili.com/x/player/playurl?fnval=1&bvid=" + bvid + "&cid=" + p1_cid + "&qn=" + qn));
+    Mp4Url = MediaInfo.data.durl[1].url;
+    */
+    
+    wb.go("https://player.bilibili.com/player.html?bvid=" + bvid + "&page=1&danmaku=0");
+    
+    blocker = `setTimeout(function() {
+            document.getElementsByClassName("bpx-player-relation-button")[0].remove();
+            document.getElementsByClassName("bpx-player-inputbar-mask")[0].remove();
+            document.getElementsByClassName("bpx-player-enter-button")[0].remove();
+            document
+                .getElementsByClassName("bpx-player-video-perch")
+                .forEach(node =>
+                    node.addEventListener(
+                        "click",
+                        event => event.stopImmediatePropagation(),
+                        true
+                    )
+                );
+        }, 4000);
+        document.addEventListener('keydown',(e)=>{
+      		if(e.ctrlKey&&e.keyCode===87){
+        		location.href="about:blank";
+      		}
+    	})
+        `;
+   wb.doScript(blocker);
+   
+});
+
+winform.setInterval( function(){ if (wb.location == "about:blank") { winform.close(); } }, 2000 );
+
+
+var menu = win.ui.menu(winform);
+menu.add('视频详情和评论',function(id){
+	bvid = winform.BvidStore.text;
+	http = inet.http();
+	
+	var VideoInfo = web.json.parse(http.get("https://api.bilibili.com/x/web-interface/view?bvid=" + bvid));
+    var aid = VideoInfo.data.aid;
+    var desc = VideoInfo.data.desc;
+    
+    var ReplyInfo = web.json.parse(http.get("https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn=1&type=1&sort=2&oid=" + aid));
+    var UserShow = "";
+    for(i,j in ReplyInfo.data.replies) {
+		try {
+			UserShow += "【" + j.member.uname + "】 " + j.content.message + `
+`;
+		} catch(e){}
+	}
+    
+    var DetailForm = win.loadForm("\dlg\video_detail.aardio");
+    DetailForm.VideoDetail.text = desc;
+    DetailForm.VideoReview.text = UserShow;
+});
+
+menu.add('点赞',function(id){
+	bvid = winform.BvidStore.text;
+	
+	if (!io.exist("./auth.data")) { win.msgbox("点暂失败", "未登录"); return; }
+	var LoginData = string.load("./auth.data");
+	
+	var cookielist = string.list(LoginData, ";", "=" );
+	var jct = inet.url.decode(cookielist["bili_jct"], true);
+	
+	http = inet.http();
+	http.addHeaders = "Cookie: " + LoginData;
+	var FeedStr = http.post(
+		"https://api.bilibili.com/x/web-interface/archive/like",
+		"bvid=" + bvid + "&like=1&csrf=" + jct,
+		{ "Cookie":LoginData; }
+	);
+	FeedStr = web.json.parse(FeedStr);
+	if (FeedStr.code == 0) { win.msgbox("点赞成功", "返回[0]"); }
+	else if (FeedStr.code == 65006) { win.msgbox("已赞过", "返回[65006]"); }
+	else { win.msgbox("点赞失败 (" + FeedStr.message + ")", "返回[" + FeedStr.code + "]"); }
+});
+
+menu.add('分享',function(id){
+	win.clip.write("https://www.bilibili.com/video/" + winform.BvidStore.text + "/?from=bili32_share");
+	
+	winform.MyMsg.hide = false;
+	winform.setTimeout(function(){ winform.MyMsg.hide = true; }, 3000);
+});
+
+winform.show();
+win.loopMessage();
+return winform;

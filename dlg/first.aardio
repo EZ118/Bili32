@@ -1,0 +1,109 @@
+import fonts.fontAwesome;
+import win.ui;
+import inet.http;
+import web.json;
+import web.form;
+import table;
+/*DSG{{*/
+var winform = win.form(text="首页推荐";right=984;bottom=589;bgcolor=2302755)
+winform.add(
+RefreshBtn_f={cls="plus";text='\uF021';left=913;top=529;right=963;bottom=579;bgcolor=-2513664;color=16777215;font=LOGFONT(h=-16;name='FontAwesome');z=1}
+)
+/*}}*/
+
+winform.RefreshBtn_f.skin({
+	background={
+		active=0xFF225366;
+		default=0xFF00A5D9;
+		hover=0xFF2080A4
+	};
+	color={
+		active=0xFFE0D3D7;
+		default=0xFFFFFFFF;
+		hover=0xFFF5E9ED
+	}
+})
+
+web.form.emulation(11001);
+var wb = web.form(winform);
+
+function doLoad_f(){
+	try{ http.addHeaders = "Cookie: " + string.load("./auth.data"); }catch(e){}
+	var http = inet.http();
+	var FeedApi = "https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?y_num=4&fresh_type=3&feed_version=V11&fresh_idx_1h=1&fetch_row=1&fresh_idx=1&brush=0&homepage_ver=1&ps=11&outside_trigger=";
+	var FeedJson = web.json.parse(http.get(FeedApi));
+	var FeedJson2 = web.json.parse(http.get(FeedApi));
+	
+	var WebList = `
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8"><meta name="referrer" content="never">
+			<style>
+				img{width:100%;border-radius:10px;-webkit-user-drag:none;}
+				a{text-decoration:none; color:#FFF;}
+				body{margin:5px;background-color:#18181c;color:#FFF;font-size:15px;user-select:none;-webkit-appearance:none;font-family: Arial, "microsoft yahei";}
+				.dynamic_singlebox{height:210px;width:190px;float:left;background:#18181c;overflow:hidden;border-radius:12px;margin:8px;padding:5px;transition:all 0.3s;cursor:pointer;}
+				.dynamic_singlebox:hover{transform:scale(1.1,1.1);transform-origin:center center;background:#3b3b3b;}
+				.dynamic_singlebox_un{color:#848484;font-size:10px;position:relative;top:8px;width:100%;overflow:hidden;}
+				.dynamic_singlebox_vt{color:#FFFFFF;width:100%;height:60px;overflow:hidden;}
+			</style>
+		</head>
+		<body>
+	`;
+	for(i,itm in FeedJson.data.item){
+		try{
+			WebList += `
+				<div class='dynamic_singlebox'>
+					<a href="#` + itm.bvid + `">
+						<img src='` + itm.pic + `@240w_135h_1c.jpg'><br>
+						<div class="dynamic_singlebox_vt">` + itm.title + `</div>
+					</a>
+					<a href="#UID` + itm.owner.mid + `"><div class="dynamic_singlebox_un">🔘&nbsp;` + itm.owner.name + `</div></a>
+				</div>`
+		}catch(e){}
+	}
+	for(i,itm in FeedJson2.data.item){
+		try{
+			WebList += `
+				<div class='dynamic_singlebox'>
+					<a href="#` + itm.bvid + `">
+						<img src='` + itm.pic + `@240w_135h_1c.jpg'><br>
+						<div class="dynamic_singlebox_vt">` + itm.title + `</div>
+					</a>
+					<a href="#UID` + itm.owner.mid + `"><div class="dynamic_singlebox_un">🔘&nbsp;` + itm.owner.name + `</div></a>
+				</div>`
+		}catch(e){}
+	}
+
+	wb.html = WebList + "</body></html>";
+}
+
+winform.RefreshBtn_f.oncommand = function(id,event){
+	doLoad_f();
+}
+
+//此处判断链接是否改变
+var origper = "default";
+winform.setInterval(
+	function(){
+		var per = string.split(wb.location + '#default','#')[2];
+		if (per != origper) {
+			if(string.indexAny(per, "BV") != null){
+				win.loadForm("\dlg\player.aardio");
+				publish("bvid", per);
+			} else {
+				win.loadForm("\dlg\space.aardio");
+				
+				publish("uid", string.replace(per, "UID", "") );
+			}
+			origper = per;
+		}
+	},1000
+);
+
+doLoad_f();
+
+winform.show();
+win.loopMessage();
+return winform;
