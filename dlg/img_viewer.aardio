@@ -1,0 +1,24 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="查看图片";right=687;bottom=469;bgcolor=16777215;min=false;mode="popup";topmost=1)
+winform.add(
+ImgShow={cls="plus";left=0;top=0;right=688;bottom=472;db=1;dl=1;dr=1;dt=1;notify=1;repeat="scale";z=1}
+)
+/*}}*/
+
+var OpenCnt = 0;
+subscribe("img-url", function(url){
+	if (OpenCnt == 1) {return;}
+	OpenCnt = 1;
+	winform.ImgShow.background = url;
+});
+
+/* ctrl+w 关闭窗口 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'W'#; oncommand = function(){winform.close();} } 
+},winform);
+
+winform.show();
+win.loopMessage();
+return winform;
