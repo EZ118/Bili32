@@ -1,0 +1,145 @@
+import win.ui;
+import win.ui.menu;
+import win.clip;
+
+import web.json;
+import web.form;
+import web.form.util;
+
+import inet.url;
+import inet.http;
+import string.list;
+/*DSG{{*/
+var winform = win.form(text="Video Player";right=759;bottom=469;bgcolor=1973790)
+winform.add(
+MyMsg={cls="static";text="分享链接已保存到剪贴板！";left=248;top=208;right=472;bottom=240;align="center";bgcolor=15793151;center=1;font=LOGFONT(h=-16);hide=1;z=1}
+)
+/*}}*/
+
+
+web.form.emulation(11001);
+var wb = web.form(winform);
+web.form.util.crossDomain(true);
+wb.addHeaders = {
+    ['Accept'] = '*/*';
+    ['Accept-Encoding'] = 'identity;q=1, *;q=0';
+    ['Origin'] = 'https://www.bilibili.com';
+    ['Referer'] = 'https://www.bilibili.com/blackboard/html5mobileplayer.html';
+    ['Accept-Language'] = 'zh-CN,zh;q=0.9';
+    ['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
+}
+
+var StartCnt = 0;					//播放器当前窗口调用次数计数器，防止二次加载
+
+var OwnerMidStore = "114514";		//视频作者ID
+var OwnerNameStore = "未知"			//视频作者昵称
+var OwnerFaceStore = "\res\user_default.png";	//视频作者昵称
+var VideoDescStore = "-";			//视频详情文本存储
+var VideoAidStore = "114514";		//视频AV ID存储
+var VideoBvidStore = "BV";			//视频BV ID存储
+var VideoPosterStore = "";			//视频封面链接存储
+var VideoPageCidStore = "";			//视频Cid存储（视频分页），本变量只存储p1的Cid
+var VideoQualityStore = "64";		// 4k:120;  1080p60:116;  1080p+:112;  1080p:80;  720p60:74;  720p:64;  480p:32;  360p:16;
+var VideoSourceUrlStore = "";		//由API获取到的视频mp4源文件链接
+
+subscribe("bvid", function(bvid){
+	if (StartCnt == 0) { StartCnt = 1; } else { return; }
+	VideoBvidStore = bvid;
+	
+	http = inet.http();
+	
+	var VideoInfo = web.json.parse(http.get("https://api.bilibili.com/x/web-interface/view?bvid=" + VideoBvidStore));
+	VideoAidStore = tostring(VideoInfo.data.aid);
+	VideoDescStore = VideoInfo.data.desc;
+	VideoPageCidStore = VideoInfo.data.pages[1].cid;
+	VideoPosterStore = VideoInfo.data.pic;
+	OwnerMidStore = tostring(VideoInfo.data.owner.mid);
+	OwnerNameStore = VideoInfo.data.owner.name;
+	OwnerFaceStore = VideoInfo.data.owner.pic;
+    
+	
+    //请求获得视频流信息
+	var MediaInfo = web.json.parse(http.get("https://api.bilibili.com/x/player/playurl?fnval=1&type=mp4&platform=html5&bvid=" + VideoBvidStore + "&cid=" + VideoPageCidStore + "&qn=" + VideoQualityStore));
+	VideoSourceUrlStore = MediaInfo.data.durl[1].url;
+    
+	//wb.go(VideoSourceUrlStore);
+	//wb.go("https://www.bilibili.com/blackboard/html5mobileplayer.html?");
+    
+	wb.html = `
+    	<style>
+    		html,body{
+    			width:100%;
+    			height:100%;
+    			padding:0;
+    			margin:0;
+    		}
+    		video{
+    			width:100%;
+    			height:100%;
+    		}
+    	</style>
+    	<video controls="controls" loop="loop" autoplay="autoplay" poster="` + VideoPosterStore + `">
+			<source src="` + VideoSourceUrlStore + `" type="video/mp4" />
+			您的浏览器版本偏低，请升级最新版！！！
+		</video>
+    `;
+});
+
+//循环检测是否跳转到空白页，若有则关闭窗口（webview中crtl+w关闭窗口的实现）
+//winform.setInterval( function(){ if (wb.location == "about:blank") { winform.close(); } }, 2000 );
+
+
+var menu = win.ui.menu(winform);
+menu.add('视频详情和评论',function(id){
+	http = inet.http();
+	
+    var ReplyInfo = web.json.parse(http.get("https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn=1&type=1&sort=2&oid=" + VideoAidStore));
+    var UserShow = "";
+    for(i,j in ReplyInfo.data.replies) {
+		try {
+			UserShow += "【" + j.member.uname + "】 " + j.content.message + '\n';
+		} catch(e){}
+	}
+    
+    var DetailForm = win.loadForm("\dlg\video_detail.aardio");
+    DetailForm.VideoDetail.text = VideoDescStore;
+    DetailForm.VideoReview.text = UserShow;
+});
+
+menu.add('点赞',function(id){
+	
+	if (!io.exist("./auth.data")) { win.msgbox("点暂失败", "未登录"); return; }
+	var LoginData = string.load("./auth.data");					//读取auth.data
+	
+	var cookielist = string.list(LoginData, ";", "=" );			//将auth.data中的字符串转为table
+	var jct = inet.url.decode(cookielist["bili_jct"], true);	//从登录信息中获取用户凭据
+	
+	http = inet.http();
+	http.addHeaders = "Cookie: " + LoginData;
+	var FeedStr = web.json.parse(http.post(
+		"https://api.bilibili.com/x/web-interface/archive/like",
+		"bvid=" + VideoBvidStore + "&like=1&csrf=" + jct,
+		{ "Cookie":LoginData; }
+	));
+	
+	if (FeedStr.code == 0) { win.msgbox("点赞成功", "返回[0]"); }
+	else if (FeedStr.code == 65006) { win.msgbox("已赞过", "返回[65006]"); }
+	else { win.msgbox("点赞失败 (" + FeedStr.message + ")", "返回[" + FeedStr.code + "]"); }
+});
+
+menu.add('分享',function(id){
+	win.clip.write("https://b23.tv/" + VideoBvidStore);
+	
+	winform.MyMsg.hide = false;
+	winform.setTimeout(function(){ winform.MyMsg.hide = true; }, 3000);
+});
+
+/* ctrl+w 关闭窗口 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'W'#; oncommand = function(){winform.close();} } 
+},winform);
+
+winform.show();
+win.loopMessage();
+return winform;

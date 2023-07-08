@@ -1,0 +1,73 @@
+import win.ui;
+import inet.url;
+import string;
+import inet.http;
+import web.json;
+/*DSG{{*/
+var winform = win.form(text="视频详情和评论";right=487;bottom=615;bgcolor=16777215;border="thin";max=false;mode="popup";topmost=1)
+winform.add(
+ReplyBtn={cls="button";text="发送";left=416;top=584;right=480;bottom=608;z=6};
+ReplyIpt={cls="edit";left=8;top=584;right=410;bottom=611;edge=1;font=LOGFONT(h=-14);z=5};
+VideoDetail={cls="richedit";text="  暂无视频简介";left=8;top=48;right=480;bottom=152;bgcolor=16777215;color=3618615;link=1;multiline=1;readonly=1;vscroll=1;wrap=1;z=2};
+VideoReview={cls="richedit";text="  暂无视频评论";left=8;top=208;right=480;bottom=576;bgcolor=16777215;color=3618615;link=1;multiline=1;readonly=1;vscroll=1;wrap=1;z=4};
+static={cls="static";text="  视频详情";left=8;top=8;right=96;bottom=40;bgcolor=0;center=1;color=16777215;font=LOGFONT(h=-16);z=1};
+static2={cls="static";text="  视频评论";left=8;top=168;right=96;bottom=200;bgcolor=0;center=1;color=16777215;font=LOGFONT(h=-16);z=3}
+)
+/*}}*/
+
+var StartFlag = false;
+var VideoBvidStore = "";
+var VideoAidStore = "";
+
+function LoadReply(){
+	http = inet.http();
+	
+    var ReplyInfo = web.json.parse(http.get("https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn=1&type=1&sort=2&oid=" + VideoAidStore));
+    var UserShow = "";
+    for(i,j in ReplyInfo.data.replies) {
+		try {
+			UserShow += "【" + j.member.uname + "】 " + j.content.message + '\n';
+		} catch(e){}
+	}
+    winform.VideoReview.text = UserShow;
+}
+
+subscribe("video_ids", function(dat){
+	if (StartFlag == false) { StartFlag = true; } else { return; }
+	VideoBvidStore = dat.bvid;
+	VideoAidStore = dat.aid;
+	LoadReply();
+});
+
+winform.ReplyBtn.oncommand = function(id,event){
+	if (!io.exist("./auth.data")) { win.msgbox("评论失败", "未登录"); return; }
+	var LoginData = string.load("./auth.data");					//读取auth.data
+	
+	var cookielist = string.list(LoginData, ";", "=" );			//将auth.data中的字符串转为table
+	var jct = inet.url.decode(cookielist["bili_jct"], true);	//从登录信息中获取用户凭据
+	
+	http = inet.http();
+	http.addHeaders = "Cookie: " + LoginData;
+	var FeedStr = web.json.parse(http.post(
+		"https://api.bilibili.com/x/v2/reply/add",
+		"oid=" + VideoAidStore + "&type=1&csrf=" + jct + "&message=" + inet.url.encode(winform.ReplyIpt.text),
+		{ "Cookie":LoginData; }
+	));
+	
+	if (FeedStr.code == 0) { win.msgbox("评论成功", "返回[0]"); }
+	else { win.msgbox("评论失败 (" + FeedStr.message + ")", "返回[" + FeedStr.code + "]"); }
+	
+	winform.ReplyIpt.text = "";
+	LoadReply();
+}
+
+/* ctrl+w 关闭窗口 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'W'#; oncommand = function(){winform.close();} } 
+},winform);
+
+
+winform.show();
+win.loopMessage();
+return winform;

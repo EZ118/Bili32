@@ -1,0 +1,65 @@
+import fonts.fontAwesome;
+import win.ui;
+import string;
+import web.json;
+import inet.http;
+/*DSG{{*/
+var winform = win.form(text="账户";right=984;bottom=589;bgcolor=16777215)
+winform.add(
+UserExp={cls="progress";left=72;top=85;right=256;bottom=101;edge=1;max=100;min=0;z=5};
+UserMoney={cls="edit";text="-";left=69;top=114;right=317;bottom=146;font=LOGFONT(h=-16);hidesel=1;z=3};
+UserName={cls="edit";text="未登录";left=72;top=24;right=256;bottom=56;bgcolor=16777215;disabled=1;font=LOGFONT(h=-16);hidesel=1;z=2};
+UserPhoto={cls="plus";text=" . ";left=8;top=8;right=64;bottom=64;autohscroll=false;autovscroll=false;background="\res\user_default.png";color=16730624;notify=1;repeat="stretch";z=1};
+static={cls="static";text="经验：";left=16;top=80;right=88;bottom=104;center=1;font=LOGFONT(h=-16);transparent=1;z=4};
+static2={cls="static";text="硬币：";left=16;top=112;right=88;bottom=136;center=1;font=LOGFONT(h=-16);transparent=1;z=6}
+)
+/*}}*/
+
+var UserMidStore = "";
+var UserPicStore = "";
+var UserNameStore = "";
+var UserMoneyStore = "";
+var UserLevelStore = "";
+var UserLevelMinStore = "";
+var UserLevelNextStore = "";
+
+//窗体加载时，判断有无数据文件
+function UfInit(){
+	var LoginData = "";
+	if (io.exist("./auth.data")) {
+		LoginData = string.load("./auth.data");
+		http = inet.http();
+		UserInfo = web.json.parse(http.get("https://api.bilibili.com/x/web-interface/nav", { "Cookie":LoginData; } ) );
+		//win.msgbox(UserInfo);
+		UserMidStore = UserInfo.data.mid;
+		UserPicStore = UserInfo.data.face;
+		UserNameStore = UserInfo.data.uname;
+		UserMoneyStore = UserInfo.data.money;
+		
+		UserLevelStore = UserInfo.data.level_info.current_exp;
+		UserLevelMinStore = UserInfo.data.level_info.current_min;
+		UserLevelNextStore = UserInfo.data.level_info.next_exp;
+		
+		winform.UserName.text = UserNameStore;
+		winform.UserPhoto.background = UserPicStore;
+		winform.UserExp.min = UserLevelMinStore;
+		winform.UserExp.max = UserLevelNextStore;
+		winform.UserExp.pos = UserLevelStore;
+		winform.UserMoney.text = UserMoneyStore;
+	}
+}
+
+winform.UserPhoto.oncommand = function(id,event){
+	//if (io.exist("./auth.data")) { return; }			//若已登录则不再继续
+	LoginForm = win.loadForm("\dlg\login.aardio");		//打开登录弹窗
+	
+	LoginForm.onClose = function(hwnd,message,wParam,lParam){
+	    UfInit();										//登录完成后重新读取和展示用户信息
+	}
+}
+
+UfInit();
+
+winform.show();
+win.loopMessage();
+return winform;

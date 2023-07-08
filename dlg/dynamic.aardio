@@ -1,0 +1,161 @@
+import fonts.fontAwesome;
+import win.ui;
+import inet.http;
+import web.json;
+import web.form;
+import table;
+import string;
+/*DSG{{*/
+var winform = win.form(text="动态";right=984;bottom=589;bgcolor=2302755)
+winform.add(
+RefreshBtn_d={cls="plus";text='\uF022';left=912;top=528;right=962;bottom=578;bgcolor=-2513664;color=16777215;font=LOGFONT(h=-16;name='FontAwesome');z=1}
+)
+/*}}*/
+
+winform.RefreshBtn_d.skin({
+	background={
+		active=0xFF225366;
+		default=0xFF00A5D9;
+		hover=0xFF2080A4
+	};
+	color={
+		active=0xFFE0D3D7;
+		default=0xFFFFFFFF;
+		hover=0xFFF5E9ED
+	}
+})
+
+web.form.emulation(11001);
+var wb = web.form(winform);
+
+function doLoad_d(){
+	//读取保存的用户数据
+	if (!io.exist("./auth.data")) { win.msgbox("您未登录", "提示"); return; }
+	var LoginData = string.load("./auth.data");
+	
+	//请求视频动态API（web端）
+	var http = inet.http();
+	var FeedApi = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?type_list=8,512,4097,4098,4099,4100,4101";
+	var FeedJson = web.json.parse(http.get(FeedApi), { "Cookie":LoginData; });
+	
+	var WebList = `
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8"><meta name="referrer" content="never">
+			<style>
+				a{text-decoration:none; color:#FFF;}
+				body{
+					margin:5px;
+					background-color:#18181c; color:#FFF;
+					font-size:15px; font-family:Arial,"microsoft yahei";
+					user-select:none; -webkit-appearance:none;
+					
+					scrollbar-arrow-color: #5c5c5d; /*三角箭头的颜色*/
+					scrollbar-face-color: #747474; /*立体滚动条的颜色（包括箭头部分的背景色）*/
+					scrollbar-3dlight-color: #747474; /*立体滚动条亮边的颜色*/
+					scrollbar-highlight-color: #1a1a1b; /*滚动条的高亮颜色（左阴影？）*/
+					scrollbar-shadow-color: #747474; /*立体滚动条阴影的颜色*/
+					scrollbar-darkshadow-color: #747474; /*立体滚动条外阴影的颜色*/
+					scrollbar-track-color: #1a1a1b; /*立体滚动条背景颜色*/
+					scrollbar-base-color:#747474; /*滚动条的基色*/
+				}
+				.dynamic_singlebox{
+					width:500px;
+					overflow:hidden;
+					background:#18181c;
+					border-radius:12px;
+					margin:15px;padding:5px;
+					transition:all 0.3s;
+					cursor:pointer;
+				}
+				.dynamic_singlebox:hover{
+					transform:scale(1.1,1.1);
+					transform-origin:center center;
+					background:#3b3b3b;
+				}
+				.dynamic_singlebox .videopic{
+					width:100%;border-radius:10px;-webkit-user-drag:none;
+				}
+				.dynamic_singlebox_un{
+					color:#848484;
+					font-size:14px;
+					width:100%;
+					overflow:hidden;
+				}
+				.dynamic_singlebox_un .userpic {
+					width:30px;
+					height:30px;
+					border-radius:30px;
+				}
+				.dynamic_singlebox_un label {
+					position:relative;
+					top:-10px;
+					left:5px;
+				}
+				.dynamic_singlebox_vt{
+					color:#FFFFFF;
+					width:100%;
+					margin:5px 0px;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="container" align="center">
+	`;
+	var err = 0;
+	for(i,itm in FeedJson.data.cards){
+		try {
+			var card_json = web.json.parse(itm.card);
+			WebList += `
+				<div class='dynamic_singlebox' align='left'>
+					<a href="#UID` + itm.desc.uid + `">
+						<div class="dynamic_singlebox_un">
+							<img class="userpic" src='` + itm.desc.user_profile.info.face + `'>
+							<label>&nbsp;` + itm.desc.user_profile.info.uname + `</label>
+						</div>
+					</a>
+         			<a href="#` + itm.desc.bvid + `">
+         				<div class='dynamic_singlebox_vt'>` + card_json.title + `</div>
+						<img class='videopic' src='` + card_json.pic + `@240w_135h_1c.jpg' title='` + card_json.title + `'>
+					</a>
+				</div>`;
+		} catch(e) {
+			err = 1;
+		}
+	}
+
+	wb.html = WebList + "</div></body></html>";
+	if(err == 1) { win.msgbox("您可能需要重新登录。若仍出现该信息，则可能是官方API变动，建议查检更新。", "动态获取失败");}
+}
+
+winform.RefreshBtn_d.oncommand = function(id,event){
+	doLoad_d();
+}
+
+//通过判断链接是否改变的方式，得到用户点击的信息（例：原链接-about:blank#default 新链接about:blank#BV******）
+var origper = "default";
+winform.setInterval(
+	function(){
+		var per = string.split(wb.location + '#default','#')[2];
+		if (per != origper) {
+			if(string.indexAny(per, "BV") != null){
+				//如果用户在webform中点击了视频，则打开视频播放器
+				win.loadForm("\dlg\player.aardio");
+				publish("bvid", per);
+			} else {
+				//如果用户在webform中点击了UP主名称，则查看UP主空间动态
+				win.loadForm("\dlg\space.aardio");
+				publish("uid", string.replace(per, "UID", "") );
+			}
+			origper = per;
+		}
+	},1000
+);
+
+//窗体加载时获取列表
+doLoad_d();
+
+winform.show();
+win.loopMessage();
+return winform;

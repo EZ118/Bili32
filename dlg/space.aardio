@@ -1,0 +1,185 @@
+import win.ui;
+import inet.http;
+import web.json;
+import web.form;
+import table;
+import string;
+/*DSG{{*/
+var winform = win.form(text="用户空间";right=984;bottom=589;bgcolor=1973790)
+winform.add()
+/*}}*/
+
+web.form.emulation(11001);
+var wb = web.form(winform);
+
+var SpaceOpenCnt = 0;
+
+subscribe("uid", function(uid){
+	if(SpaceOpenCnt == 1) { return; }
+	SpaceOpenCnt = 1;
+	
+	var http = inet.http();
+	
+	try{ http.addHeaders = "Cookie: " + string.load("./auth.data"); }catch(e){}
+	
+	
+	
+	var FeedApi = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=" + uid;
+	var FeedStr = http.get(FeedApi)
+	var FeedJson = web.json.parse(FeedStr);
+	var UserName = FeedJson.data.cards[1].desc.user_profile.info.uname;
+	var UserFace = FeedJson.data.cards[1].desc.user_profile.info.face;
+	
+	var WebList = `
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8"><meta name="referrer" content="never">
+			<style>
+				a{text-decoration:none; color:#FFF;}
+				body{
+					margin:5px;
+					background-color:#18181c; color:#FFF;
+					font-size:15px; font-family:Arial,"microsoft yahei";
+					user-select:none; -webkit-appearance:none;
+					
+					scrollbar-arrow-color: #5c5c5d; /*三角箭头的颜色*/
+					scrollbar-face-color: #747474; /*立体滚动条的颜色（包括箭头部分的背景色）*/
+					scrollbar-3dlight-color: #747474; /*立体滚动条亮边的颜色*/
+					scrollbar-highlight-color: #1a1a1b; /*滚动条的高亮颜色（左阴影？）*/
+					scrollbar-shadow-color: #747474; /*立体滚动条阴影的颜色*/
+					scrollbar-darkshadow-color: #747474; /*立体滚动条外阴影的颜色*/
+					scrollbar-track-color: #1a1a1b; /*立体滚动条背景颜色*/
+					scrollbar-base-color:#747474; /*滚动条的基色*/
+				}
+				.dynamic_singlebox{
+					width:450px;
+					overflow:hidden;
+					background:#18181c;
+					border-radius:12px;
+					margin:15px;padding:5px;
+					transition:all 0.2s;
+					cursor:pointer;
+				}
+				.dynamic_singlebox:hover{
+					/*transform:scale(1.1,1.1);
+					transform-origin:center center;*/
+					background:#3b3b3b;
+				}
+				.dynamic_singlebox .videopic{
+					width:100%;border-radius:10px;-webkit-user-drag:none;
+				}
+				.dynamic_singlebox .dailypic{
+					width:100px;height:100px; object-fit:contain;
+					border-radius:5px;-webkit-user-drag:none;
+					margin:5px;
+				}
+				.dynamic_singlebox_un{
+					color:#848484; font-size:14px;
+					width:100%; overflow:hidden;
+				}
+				.dynamic_singlebox_un .userpic {
+					width:30px; height:30px; border-radius:30px;
+				}
+				.dynamic_singlebox_un label {
+					position:relative; top:-10px; left:5px;
+				}
+				.dynamic_singlebox_vt{
+					color:#FFFFFF; width:100%; margin:5px 0px;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="container" align="center">
+	`;
+	var err = 0;
+	for(i,itm in FeedJson.data.cards){
+		try {
+			var ImgUrl = "";
+			var VidDesc = "";
+			var LinkUrl = "default";
+			
+			var card_json = web.json.parse(itm.card);
+			
+			
+			try{
+				VidDesc = card_json.item.content;
+			} catch(e){}
+			
+			
+			try{
+				//视频卡片
+				VidDesc = card_json.title;
+				ImgUrl = '<img class="videopic" src="' + card_json.pic + '@240w_135h_1c.jpg" onerror="this.remove()">';
+				LinkUrl = string.split(card_json.short_link_v2, "/")[4];
+			}catch(){}
+			
+			try{
+				if (card_json.item.pictures_count != null){
+					//带图片的卡片
+					VidDesc = card_json.item.description;
+					for (p, d in card_json.item.pictures){
+						ImgUrl += '<a href="#IMG-' + d.img_src + '"><img class="dailypic" src="' + d.img_src + '@256w_256h_1e_1c_!web-dynamic.jpg" onerror="this.remove()"></a>';
+						if(p % 3 == 0) {ImgUrl += "<br/>";}
+					}
+					
+				} 
+			}catch(){}
+			
+			if (VidDesc == null) {VidDesc = "";}
+			if (LinkUrl == null) {LinkUrl = "default";}
+			
+			if (VidDesc == "" && LinkUrl == "default" && (ImgUrl == null || ImgUrl == "")){}else{
+				WebList += `
+					<div class='dynamic_singlebox' align='left'>
+						<a>
+							<div class="dynamic_singlebox_un">
+								<img class="userpic" src='` + itm.desc.user_profile.info.face + `'>
+								<label>&nbsp;` + itm.desc.user_profile.info.uname + `</label>
+							</div>
+						</a>
+         				<a href='#` + LinkUrl + `'>
+         					<div class='dynamic_singlebox_vt'>` + VidDesc + `</div>
+							` + ImgUrl + `
+						</a>
+					</div>`;
+			}
+		} catch(e) { err += 1; }
+		
+	}
+
+	try{ wb.html = WebList + "</div></body></html>"; } catch(e) { err += 1; }
+	if(err > 3) {
+		win.msgbox("可能您未登录或需要重新登录。若登录后仍出现此信息，则可能是b站官方做出更新，程序未及时变更。", "用户空间列表获取失败" + err);
+	}
+	
+});
+
+
+//此处判断链接是否改变
+var origper = "default";
+winform.setInterval(
+	function(){
+		var per = string.split(wb.location + '#default','#')[2];
+		if (per != origper) {
+			if(string.indexAny(per, "BV") != null){
+				win.loadForm("\dlg\player.aardio");
+				publish("bvid", per);
+			} else {
+				win.loadForm("\dlg\img_viewer.aardio");
+				publish("img-url", string.replace(per, "IMG-", "") );
+			}
+			origper = per;
+		}
+	},1000
+);
+
+/* ctrl+w 关闭窗口 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'W'#; oncommand = function(){winform.close();} } 
+},winform);
+
+winform.show();
+win.loopMessage();
+return winform;
