@@ -4,7 +4,7 @@
 哔哩哔哩第三方客户端，基于Aardio语言编写，兼容win7及以上的系统。
 
 #### 软件架构
-基于Aardio语言编写，视频列表展示部分使用了web.form(IE11)，视频播放器部分使用了web.view(msedge webview2)，播放视频要求系统中已安装edge webview2（若没有会自动下载安装）且ie版本为ie11
+基于Aardio语言编写，视频列表展示和视频播放部分都使用了web.form(IE11)，~~视频播放器部分使用了web.view(msedge webview2)，播放视频要求系统中已安装edge webview2（若没有会自动下载安装）且~~ie版本为ie11
 
 
 #### 使用教程
