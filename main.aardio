@@ -4,13 +4,13 @@ import win.ui;
 mainForm = win.form(text="Bilibili32";right=1040;bottom=642;bgcolor=16777215;border="none")
 mainForm.add(
 caption={cls="bkplus";text="Bilibili32";left=32;top=12;right=118;bottom=30;color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);z=5};
-custom={cls="custom";left=0;top=40;right=1040;bottom=643;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1};
+custom={cls="custom";left=0;top=40;right=1041;bottom=643;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1};
 logo={cls="bkplus";text='\uF16A';left=8;top=10;right=37;bottom=35;color=16777215;dl=1;dt=1;font=LOGFONT(h=-18;name='FontAwesome');z=4};
+navAccount={cls="plus";text="账户";left=411;top=5;right=505;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF007';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=6};
 navDynamic={cls="plus";text="动态";left=216;top=5;right=310;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF1AA';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=8};
 navFirst={cls="plus";text="推荐";left=120;top=5;right=214;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF00A';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=3};
-navHelp={cls="plus";text="帮助";left=507;top=5;right=601;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF06A';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=7};
+navHelp={cls="plus";text="关于";left=507;top=5;right=601;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF06A';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=7};
 navSearch={cls="plus";text="搜索";left=314;top=5;right=408;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF00E';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=9};
-navSetting={cls="plus";text="设置";left=411;top=5;right=505;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF013';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=6};
 titleBar={cls="bkplus";left=0;top=0;right=1042;bottom=41;bgcolor=3022354;dl=1;dr=1;dt=1;z=2}
 )
 /*}}*/
@@ -23,7 +23,7 @@ var tbs = win.ui.tabs(
 	mainForm.navFirst,
 	mainForm.navDynamic,
 	mainForm.navSearch,
-	mainForm.navSetting,
+	mainForm.navAccount,
 	mainForm.navHelp
 );
 	
@@ -45,7 +45,7 @@ tbs.skin({
 tbs.loadForm(1,"\dlg\first.aardio" );
 tbs.loadForm(2,"\dlg\dynamic.aardio" );
 tbs.loadForm(3,"\dlg\search.aardio" );
-tbs.loadForm(4,"\dlg\setting.aardio" );
+tbs.loadForm(4,"\dlg\account.aardio" );
 tbs.loadForm(5,"\dlg\help.aardio" );
 tbs.selIndex = 1; 
 
