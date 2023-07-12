@@ -9,10 +9,10 @@ import preg;
 /*DSG{{*/
 var winform = win.form(text="搜索";right=1040;bottom=607;bgcolor=2302755)
 winform.add(
-BiliLogo={cls="picturebox";left=336;top=144;right=736;bottom=273;autosize=1;bgcolor=2302755;center=1;dl=1;dr=1;dt=1;image=$"res\search_bg.jpg";z=1};
+BiliLogo={cls="picturebox";left=336;top=144;right=736;bottom=274;autosize=1;bgcolor=2302755;center=1;dl=1;dr=1;dt=1;image=$"\res\search_bg.jpg";z=1};
 ReturnBack={cls="button";text="返回";left=968;top=552;right=1016;bottom=600;hide=1;z=4};
 SearchSubmit={cls="button";text="搜索";left=672;top=280;right=784;bottom=320;flat=1;font=LOGFONT(h=-16);z=3};
-SearchWd={cls="edit";left=272;top=280;right=664;bottom=320;bgcolor=16777215;edge=1;font=LOGFONT(h=-20);hidesel=1;z=2}
+SearchWd={cls="edit";left=272;top=280;right=664;bottom=320;aw=1;bgcolor=16777215;edge=1;font=LOGFONT(h=-20);hidesel=1;z=2}
 )
 /*}}*/
 
