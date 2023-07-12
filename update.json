@@ -1,6 +1,7 @@
 {
-	"version":"v1.2",
-	"num":6,
-	"date":"2023/7/8",
-	"file":"https://gitee.com/EZ118/bili32/releases/download/v1.2/Bilibili32.exe"
+	"version":"v1.3",
+	"num":7,
+	"date":"2023/7/12",
+	"file":"https://gitee.com/EZ118/bili32/releases/download/v1.2/Bilibili32.exe",
+	"desc":"新增缓存清理入口，更新提示可显示更新内容，修复窗口右侧白边问题，修复调整窗口大小时搜索框的布局问题，首页支持用快捷键刷新列表（Ctrl+R），首页列表缩放比例调整为105%。"
 }
