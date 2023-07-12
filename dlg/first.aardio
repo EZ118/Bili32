@@ -44,7 +44,8 @@ function doLoad_f(){
 				a{text-decoration:none; color:#FFF;}
 				body{
 					margin:5px;background-color:#18181c;color:#FFF;font-size:15px;user-select:none;-webkit-appearance:none;font-family: Arial, "microsoft yahei";
-					
+					zoom:1.05;
+					overflow-x:hidden;
 					scrollbar-arrow-color: #5c5c5d; /*三角箭头的颜色*/
 					scrollbar-face-color: #747474; /*立体滚动条的颜色（包括箭头部分的背景色）*/
 					scrollbar-3dlight-color: #747474; /*立体滚动条亮边的颜色*/
@@ -59,6 +60,13 @@ function doLoad_f(){
 				.dynamic_singlebox_un{color:#848484;font-size:10px;position:relative;top:8px;width:100%;overflow:hidden;}
 				.dynamic_singlebox_vt{color:#FFFFFF;width:100%;height:60px;overflow:hidden;}
 			</style>
+			<script>
+				document.onkeydown = function(){
+					var e = window.event||ar||arguments[0];
+					if((e.ctrlKey)&&(e.keyCode == 82)){ return false; }
+					else if(e.keyCode == 116){ return false; }
+				}
+			</script>
 		</head>
 		<body>
 	`;
@@ -94,6 +102,8 @@ winform.RefreshBtn_f.oncommand = function(id,event){
 	doLoad_f();
 }
 
+doLoad_f();
+
 //此处判断链接是否改变
 var origper = "default";
 winform.setInterval(
@@ -112,7 +122,11 @@ winform.setInterval(
 	},1000
 );
 
-doLoad_f();
+/* ctrl+r 刷新列表 */
+import win.ui.accelerator
+win.ui.accelerator({
+	{ ctrl = true; vkey = 'R'#; oncommand = function(){ doLoad_f(); } } 
+},winform);
 
 winform.show();
 win.loopMessage();
